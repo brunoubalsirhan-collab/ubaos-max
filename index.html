@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UBaOS MAX</title>
+<style>
+/* ===== Base y tema ===== */
+:root{--a:#5ef4ff;--tx:#e8f0ff;--g:rgba(18,24,48,.55);--g2:rgba(255,255,255,.09);--bd:rgba(255,255,255,.15);--is:72px}
+*{box-sizing:border-box;margin:0;font-family:"Segoe UI",system-ui,sans-serif}
+html,body{height:100%;overflow:hidden;background:#0a0e1a;color:var(--tx);user-select:none}
+body.light{--tx:#14203a;--g2:rgba(0,0,0,.07);--bd:rgba(0,0,0,.14)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:var(--g2);border:1px solid var(--bd);border-radius:10px;padding:6px 11px;cursor:pointer;transition:.15s}
+button:hover,.on{background:var(--a)!important;color:#001018!important}
+input,select,textarea{background:var(--g2);border:1px solid var(--bd);border-radius:10px;padding:6px 10px;outline:0;user-select:text}
+input:focus,textarea:focus{border-color:var(--a)}select option{color:#000}
+.gl{background:var(--g);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--bd);box-shadow:0 12px 40px #0007}
+/* ===== Arranque ===== */
+#boot{position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at 50% 40%,#1b2a5a,#0a0e1a 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;color:#fff;transition:opacity .6s}
+.logo{font-size:clamp(34px,8vw,64px);font-weight:800;letter-spacing:.15em}.logo b{color:var(--a);text-shadow:0 0 30px var(--a)}
+#bar{width:min(320px,70vw);height:6px;border-radius:9px;background:#fff2;overflow:hidden}#bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5ef4ff,#b985ff);transition:width 2.4s ease}
+/* ===== Escritorio, ventanas, barra ===== */
+#desk{position:fixed;inset:0;background-size:cover}#icons{position:absolute;inset:0 0 56px 0}
+.ic{position:absolute;width:calc(var(--is) + 24px);text-align:center;padding:6px;border-radius:12px;font-size:12px;text-shadow:0 1px 4px #000;color:#fff;cursor:pointer;touch-action:none}
+.ic:hover,.ic.sel{background:#fff2}.ic em{display:block;font-style:normal;font-size:calc(var(--is)*.6);line-height:1.1}
+.win{position:absolute;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;animation:op .2s;outline:0;min-width:260px;min-height:180px}
+.win.min{display:none}.win.mx{left:0!important;top:0!important;right:0;bottom:56px;width:auto!important;height:auto!important;border-radius:0}.win.cl{animation:cl .18s forwards}
+.win.act{box-shadow:0 18px 60px #000a,0 0 0 1px var(--a)}
+@keyframes op{from{opacity:0;transform:scale(.92)}}@keyframes cl{to{opacity:0;transform:scale(.92)}}
+.tt{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;cursor:move;font-weight:600;background:var(--g2);touch-action:none;flex:none}
+.wb button{padding:2px 9px;margin-left:4px;border-radius:7px}
+.bd{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+.rz{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none}
+#tb{position:absolute;left:0;right:0;bottom:0;height:52px;display:flex;align-items:center;gap:8px;padding:0 10px;z-index:9000;border-width:1px 0 0}
+#tb.f{left:10%;right:10%;bottom:8px;border-radius:20px;border-width:1px}
+#run{flex:1;display:flex;gap:6px;overflow:hidden}#tb.c #run{justify-content:center}
+#run button.mn{opacity:.5}#run button.ac{border-bottom:2px solid var(--a)}
+#clk{text-align:center;cursor:pointer;line-height:1.1;padding:2px 8px;border-radius:8px;font-size:14px}
+sup{color:var(--a);font-weight:700}
+#sm{position:absolute;left:10px;bottom:62px;width:min(440px,94vw);border-radius:18px;padding:14px;z-index:9500;display:none}#sm.o{display:block;animation:op .15s}
+.ag{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin:12px 0}.ag button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;padding:10px 4px}.ag em{font-style:normal;font-size:28px}
+#nc{position:absolute;right:10px;bottom:62px;top:10px;width:min(340px,94vw);border-radius:18px;padding:14px;z-index:9500;transform:translateX(120%);transition:transform .3s;display:flex;flex-direction:column;gap:10px}#nc.o{transform:none}
+.qs{display:flex;gap:6px;flex-wrap:wrap}#nl{flex:1;overflow:auto}
+#toasts{position:fixed;right:14px;top:14px;z-index:99998;display:flex;flex-direction:column;gap:8px}.toast{padding:10px 14px;border-radius:12px;animation:op .2s;max-width:300px;font-size:13px}.toast.err{border-color:#ff5e7a}.toast.ok{border-color:#7dffb0}
+#cm{position:fixed;display:none;z-index:99997;padding:6px;border-radius:12px;min-width:180px}#cm div{padding:7px 12px;border-radius:8px;cursor:pointer}#cm div:hover{background:var(--a);color:#001018}
+.ov{position:fixed;inset:0;z-index:99990;background:#0006;display:flex;align-items:center;justify-content:center}.bx{padding:20px;border-radius:16px;display:flex;flex-direction:column;gap:12px;min-width:260px}
+/* ===== Apps ===== */
+.tl{display:flex;gap:6px;padding:8px;flex-wrap:wrap;align-items:center;flex:none}.row{display:flex;gap:8px;align-items:center;justify-content:space-between}.row.c{justify-content:center}
+.rw{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--bd)}.rw span{flex:1}
+.emp{margin:auto;text-align:center;opacity:.6;padding:30px;grid-column:1/-1}.emp em{font-size:56px;display:block;font-style:normal}
+.pth{padding:0 10px 6px;font-size:13px;flex:none}.pth span{cursor:pointer;padding:2px 5px;border-radius:6px}.pth span:hover{background:var(--g2)}
+.fl{flex:1;overflow:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;align-content:start}.fl.l{display:block}
+.it{padding:8px;border-radius:10px;text-align:center;font-size:12px;cursor:pointer;word-break:break-word}.it:hover{background:var(--g2)}.it em{display:block;font-style:normal;font-size:34px}
+.l .it{display:flex;gap:10px;text-align:left;align-items:center}.l .it em{font-size:20px;display:inline}
+.sp{flex:1;display:flex;min-height:0}.sl{width:210px;display:flex;flex-direction:column;border-right:1px solid var(--bd)}.sl>input{margin:0 8px 8px}.ls{overflow:auto;flex:1}.ls div{padding:8px 12px;cursor:pointer;border-radius:8px;margin:2px 6px}.ls div:hover{background:var(--g2)}
+.ed{flex:1;display:flex;flex-direction:column;min-width:0}textarea{flex:1;margin:0 8px 8px;resize:none}
+.cc{display:flex;gap:10px;padding:10px;flex:1;min-height:0}.cm1{flex:1;display:flex;flex-direction:column;gap:8px}.dp{text-align:right;padding:10px;background:var(--g2);border-radius:12px}.dp small{display:block;min-height:16px;opacity:.6}.dp div{font-size:34px;overflow:hidden}
+.kg{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.kg button{font-size:18px}.hs{width:150px;overflow:auto;font-size:12px}.hs p{padding:4px 0;border-bottom:1px solid var(--bd)}
+.cv{flex:1;overflow:auto;background:#555}.cv canvas{display:block;background:#fff;touch-action:none;cursor:crosshair}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 10px}.cg div{text-align:center;padding:8px 0;border-radius:8px;cursor:pointer;position:relative}.cg .h{opacity:.6;cursor:default;font-size:12px}.cg .td{border:1px solid var(--a)}
+.cg .ev::after{content:'';position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2px;border-radius:50%;background:var(--a)}.cg .on::after{background:#001018}.ce{flex:1;overflow:auto}
+.mu{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;text-align:center}.big{font-size:56px}.pl div{padding:6px 10px;border-radius:8px;cursor:pointer;text-align:left}.pl div:hover{background:var(--g2)}
+.tm{flex:1;overflow:auto;padding:10px;background:#050810cc;color:#7dffb0;user-select:text}.tm,.tm *{font-family:Consolas,monospace}.tm input{background:none;border:0;color:inherit;flex:1;padding:0}.ln{display:flex}
+.nb{padding:4px 10px;font-size:12px;opacity:.7;flex:none}.vw{flex:1;background:#0e1426;display:flex;overflow:auto}body.light .vw{background:#eef2fb}.vw iframe{border:0;flex:1;background:#fff}
+.hp{flex:1;padding:30px;text-align:center}.tiles{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}.tile{padding:12px 18px;border-radius:12px;background:var(--g2);cursor:pointer}
+.st{padding:12px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px}.sw{display:flex;gap:8px;flex-wrap:wrap}.sw i{width:56px;height:38px;border-radius:9px;cursor:pointer;background-size:cover}.sw i.s{outline:3px solid var(--a)}
+@media(max-width:700px){.sl{width:120px}.hs{display:none}#run button span,#st span{display:none}}
+</style></head><body>
+<div id="boot"><div class="logo">UBa<b>OS</b> MAX</div><div id="bar"><i></i></div><p id="tx1">Iniciando…</p><button id="go" hidden>Entrar al escritorio ➜</button></div>
+<div id="desk"><div id="icons"></div><div id="wins"></div>
+<div id="sm" class="gl"><input id="ss" placeholder="🔍 Buscar aplicaciones…" style="width:100%"><div id="sg" class="ag"></div><div class="row"><small>UBaOS MAX v1.0</small><button id="rb">⏻ Reiniciar</button></div></div>
+<div id="nc" class="gl"><b>🔔 Centro de notificaciones</b>
+<div class="qs"><button id="qw">📶 Wi-Fi</button><button id="qb">🔵 Bluetooth</button><button id="qt">🌓 Tema</button></div>
+<div class="row">🔊<input id="qv" type="range" min="0" max="1" step=".01" style="flex:1"></div>
+<small style="opacity:.7">Wi-Fi y Bluetooth son simulaciones: no modifican tu hardware real.</small><div id="nl"></div><button id="qc">🧹 Borrar todo</button></div>
+<div id="tb" class="gl c"><button id="st">⬡ <span>Inicio</span></button><div id="run"></div><span id="ti"></span><button id="nb">🔔<sup id="nbc"></sup></button><div id="clk"></div></div></div>
+<div id="cm" class="gl"></div><div id="toasts"></div>
+<script>
+/* ===== Utilidades y estado (LocalStorage) ===== */
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+const h=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.innerHTML=x;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),uid=()=>Math.random().toString(36).slice(2,9);
+const D={theme:'dark',acc:'#5ef4ff',bg:0,img:null,op:.55,is:72,tb:'c',fs:[],notes:[],ev:{},mk:[['Wikipedia','https://es.wikipedia.org'],['OpenStreetMap','https://www.openstreetmap.org']],bin:[],nt:[],pos:{},vol:.7,wifi:1,bt:0};
+let S;try{S={...JSON.parse(JSON.stringify(D)),...JSON.parse(localStorage.getItem('ubaos')||'{}')}}catch(e){S=JSON.parse(JSON.stringify(D))}
+if(!S.fs.length)S.fs=[{id:'d',name:'Documentos',t:'d',p:'r'},{id:'i',name:'Imágenes',t:'d',p:'r'},{id:'m',name:'Música',t:'d',p:'r'},{id:'b',name:'Bienvenida.txt',t:'f',p:'d',c:'¡Bienvenido a UBaOS MAX!',m:'text/plain'}];
+let _t;const save=()=>{try{localStorage.setItem('ubaos',JSON.stringify(S))}catch(e){toast('Error','No hay espacio para guardar (archivo demasiado grande).','err')}},sv=()=>{clearTimeout(_t);_t=setTimeout(save,250)};
+addEventListener('beforeunload',save);
+const dl=(n,bl)=>{const a=h('a');a.href=URL.createObjectURL(bl);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)};
+const BG=['linear-gradient(135deg,#0a0e1a,#1b2a5a,#4a1d7a)','linear-gradient(160deg,#021b2b,#0b6e7f,#5ef4ff)','linear-gradient(135deg,#2b0a3d,#b985ff,#ff7ab8)','linear-gradient(150deg,#0f2027,#203a43,#2c5364)','linear-gradient(135deg,#1a1a1a,#434343)','linear-gradient(160deg,#42275a,#734b6d)','linear-gradient(135deg,#ff9966,#ff5e62)','radial-gradient(circle at 30% 20%,#5ef4ff55,transparent 40%),radial-gradient(circle at 80% 70%,#b985ff66,transparent 45%),#0a0e1a'];
+function apply(){const r=document.documentElement.style,l=S.theme=='light';document.body.classList.toggle('light',l);r.setProperty('--a',S.acc);r.setProperty('--g',l?`rgba(255,255,255,${S.op})`:`rgba(18,24,48,${S.op})`);r.setProperty('--is',S.is+'px');$('#desk').style.background=S.img?`center/cover url("${S.img}")`:BG[S.bg];$('#tb').className='gl '+S.tb;sv()}
+/* ===== Notificaciones, menú contextual, diálogo ===== */
+function toast(t,x,k){const e=h('div','toast gl '+(k||''),`<b>${t}</b><br>${x}`);$('#toasts').append(e);setTimeout(()=>e.remove(),3200)}
+function notify(t,x,k){S.nt.unshift({t,x,d:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})});S.nt=S.nt.slice(0,30);sv();toast(t,x,k);rnc()}
+function rnc(){const l=$('#nl');l.innerHTML=S.nt.length?'':'<div class="emp"><em>🔕</em>Sin notificaciones</div>';S.nt.forEach(n=>l.append(h('div','rw',`<span><b>${n.t}</b><br><small>${n.x} · ${n.d}</small></span>`)));$('#nbc').textContent=S.nt.length||''}
+function ctx(e,it){e.preventDefault();e.stopPropagation();const m=$('#cm');m.innerHTML='';it.forEach(([l,f])=>{const d=h('div','',l);d.onclick=()=>{m.style.display='none';f()};m.append(d)});m.style.display='block';m.style.left=Math.min(e.clientX,innerWidth-190)+'px';m.style.top=Math.min(e.clientY,innerHeight-it.length*36-10)+'px'}
+function ask(m,d,f){const o=h('div','ov',`<div class="gl bx"><p>${m}</p><input value="${esc(d)}"><div class="row c"><button class="ok">Aceptar</button><button class="no">Cancelar</button></div></div>`),i=$('input',o),x=()=>o.remove(),ok=()=>{const v=i.value.trim();if(v){x();f(v)}};document.body.append(o);i.focus();i.select();$('.ok',o).onclick=ok;$('.no',o).onclick=x;i.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')ok();if(e.key=='Escape')x()}}
+/* ===== Sistema de ventanas ===== */
+let z=10,W={},act=null,ready=0;
+function launch(id,arg){let w=W[id];if(w){foc(id);if(arg&&w.arg)w.arg(arg);return}
+ const a=A[id],el=h('div','win gl'),n=Object.keys(W).length,vw=innerWidth,vh=innerHeight-56,wd=Math.min(a.w,vw-10),ht=Math.min(a.h,vh-10);
+ el.style.cssText=`width:${wd}px;height:${ht}px;left:${Math.min(Math.max(5,(vw-wd)/2+n*26-50),vw-wd-5)}px;top:${Math.min(Math.max(5,(vh-ht)/2+n*26-50),vh-ht-5)}px`;
+ el.tabIndex=-1;el.innerHTML=`<div class="tt"><span>${a.i} ${a.n}</span><span class="wb"><button title="Minimizar">—</button><button title="Maximizar">▢</button><button title="Cerrar">✕</button></span></div><div class="bd"></div><i class="rz"></i>`;
+ w=W[id]={el,id};$('#wins').append(el);
+ const [bm,bx,bc]=$$('.wb button',el),tt=$('.tt',el),rz=$('.rz',el);
+ bm.onclick=()=>{el.classList.add('min');if(act==id)act=null;tbr()};bx.onclick=()=>el.classList.toggle('mx');bc.onclick=()=>clo(id);
+ tt.ondblclick=e=>{if(!e.target.closest('button'))bx.onclick()};el.onpointerdown=()=>foc(id);
+ tt.onpointerdown=e=>{if(e.target.closest('button')||el.classList.contains('mx'))return;const dx=e.clientX-el.offsetLeft,dy=e.clientY-el.offsetTop;tt.setPointerCapture(e.pointerId);
+  tt.onpointermove=m=>{el.style.left=Math.min(Math.max(80-el.offsetWidth,m.clientX-dx),innerWidth-80)+'px';el.style.top=Math.min(Math.max(0,m.clientY-dy),innerHeight-90)+'px'};tt.onpointerup=()=>tt.onpointermove=null};
+ rz.onpointerdown=e=>{e.stopPropagation();foc(id);const x=e.clientX,y=e.clientY,w0=el.offsetWidth,h0=el.offsetHeight;rz.setPointerCapture(e.pointerId);
+  rz.onpointermove=m=>{el.style.width=Math.max(260,w0+m.clientX-x)+'px';el.style.height=Math.max(180,h0+m.clientY-y)+'px'};rz.onpointerup=()=>rz.onpointermove=null};
+ a.f($('.bd',el),w);foc(id);el.focus({preventScroll:true});if(arg&&w.arg)w.arg(arg)}
+function foc(id){const w=W[id];if(!w)return;w.el.classList.remove('min');act=id;w.el.style.zIndex=++z;$$('.win').forEach(e=>e.classList.toggle('act',e==w.el));tbr()}
+function clo(id){const w=W[id];if(!w)return;w.el.classList.add('cl');delete W[id];if(act==id)act=null;tbr();setTimeout(()=>w.el.remove(),180)}
+function tbr(){const r=$('#run');r.innerHTML='';for(const id in W){const e=W[id].el,mn=e.classList.contains('min'),b=h('button',mn?'mn':act==id?'ac':'',`${A[id].i}<span> ${A[id].n.replace('UBa ','')}</span>`);b.onclick=()=>{if(mn||act!=id)foc(id);else{e.classList.add('min');act=null;tbr()}};r.append(b)}}
+/* ===== UBa Explorer ===== */
+function explorer(b){let p='r',v='g',q='';
+ b.innerHTML='<div class="tl"><button class="up">⬆ Subir</button><button class="nf">📁 Carpeta</button><button class="nt">📄 Archivo</button><button class="im">⬇ Importar</button><button class="vw2">☰ / ▦</button><input class="sq" placeholder="🔍 Buscar…"></div><div class="pth"></div><div class="fl"></div><input type="file" multiple hidden>';
+ const L=$('.fl',b),P=$('.pth',b),FI=$('input[type=file]',b);
+ const kid=f=>f.t=='d'?'📁':f.m?.startsWith('image')?'🖼️':f.m?.startsWith('audio')?'🎵':'📄';
+ const anc=(id,t)=>{while(id&&id!='r'){if(id==t)return true;id=S.fs.find(f=>f.id==id)?.p}return false};
+ const mv=(id,to)=>{const f=S.fs.find(x=>x.id==id);if(!f||f.p==to)return;if(anc(to,id))return notify('No permitido','No puedes mover una carpeta dentro de sí misma','err');f.p=to;sv();R();notify('Movido',esc(f.name),'ok')};
+ const drop=(e,id)=>{e.ondragover=ev=>ev.preventDefault();e.ondrop=ev=>{ev.preventDefault();mv(ev.dataTransfer.getData('text'),id)}};
+ const del=f=>{const ids=[f.id];if(f.t=='d'){let ch=[f.id];while(ch.length){const k=S.fs.filter(x=>ch.includes(x.p)).map(x=>x.id);ids.push(...k);ch=k}}
+  const o=S.fs.filter(x=>ids.includes(x.id));S.fs=S.fs.filter(x=>!ids.includes(x.id));S.bin.push({id:uid(),n:f.name,r:f.id,o,from:f.p});sv();R();notify('Papelera','Movido: '+esc(f.name))};
+ const opn=f=>{if(f.t=='d'){p=f.id;q='';$('.sq',b).value='';return R()}
+  if(f.m?.startsWith('image'))launch('vi',f.id);
+  else if(f.m?.startsWith('audio')){pl.push({n:f.name,u:f.c});launch('mu');play(pl.length-1)}
+  else if(f.m?.startsWith('text')){let n=S.notes.find(n=>n.src==f.id);if(!n){n={id:uid(),n:f.name,c:f.c||'',src:f.id};S.notes.push(n);sv()}launch('no',n.id)}
+  else notify('No compatible','No se puede abrir "'+esc(f.name)+'"','err')};
+ const R=()=>{let c=[],x=p;while(x!='r'){const f=S.fs.find(f=>f.id==x);if(!f){p='r';break}c.unshift(f);x=f.p}
+  P.innerHTML='';const hm=h('span','','🏠 Inicio');hm.onclick=()=>{p='r';q='';R()};drop(hm,'r');P.append(hm);
+  c.forEach(f=>{const s=h('span','',' / '+esc(f.name));s.onclick=()=>{p=f.id;R()};drop(s,f.id);P.append(s)});
+  const it=S.fs.filter(f=>q?f.name.toLowerCase().includes(q):f.p==p).sort((a,b)=>a.t.localeCompare(b.t)||a.name.localeCompare(b.name));
+  L.className='fl'+(v=='l'?' l':'');L.innerHTML=it.length?'':`<div class="emp"><em>📂</em>${q?'Sin resultados':'Esta carpeta está vacía'}<br><small>Crea o importa archivos</small></div>`;
+  it.forEach(f=>{const e=h('div','it',`<em>${kid(f)}</em>${esc(f.name)}`);e.draggable=true;e.ondragstart=ev=>ev.dataTransfer.setData('text',f.id);if(f.t=='d')drop(e,f.id);e.ondblclick=()=>opn(f);
+   e.oncontextmenu=ev=>ctx(ev,[['📂 Abrir',()=>opn(f)],['✏️ Renombrar',()=>ask('Nuevo nombre',f.name,n=>{f.name=n;sv();R()})],['🗑️ Eliminar',()=>del(f)]]);L.append(e)})};
+ $('.up',b).onclick=()=>{const f=S.fs.find(f=>f.id==p);if(f){p=f.p;R()}};
+ $('.nf',b).onclick=()=>ask('Nombre de la carpeta','Nueva carpeta',n=>{S.fs.push({id:uid(),name:n,t:'d',p});sv();R()});
+ $('.nt',b).onclick=()=>ask('Nombre del archivo','nuevo.txt',n=>{S.fs.push({id:uid(),name:n,t:'f',p,c:'',m:'text/plain'});sv();R()});
+ $('.vw2',b).onclick=()=>{v=v=='g'?'l':'g';R()};$('.sq',b).oninput=e=>{q=e.target.value.toLowerCase();R()};$('.im',b).onclick=()=>FI.click();
+ FI.onchange=()=>{[...FI.files].forEach(fl=>{if(fl.size>2e6)return notify('Archivo grande',esc(fl.name)+' supera 2 MB','err');const r=new FileReader(),tx=fl.type.startsWith('text')||/\.(txt|md|json|csv)$/i.test(fl.name);
+  r.onload=()=>{S.fs.push({id:uid(),name:fl.name,t:'f',p,c:r.result,m:tx?'text/plain':fl.type||'application/octet-stream'});sv();R();notify('Importado',esc(fl.name),'ok')};tx?r.readAsText(fl):r.readAsDataURL(fl)});FI.value=''};
+ L.oncontextmenu=e=>{e.stopPropagation();e.preventDefault();if(e.target==L)ctx(e,[['📁 Nueva carpeta',()=>$('.nf',b).click()],['📄 Nuevo archivo',()=>$('.nt',b).click()]])};R()}
+function viewer(b,w){b.innerHTML='<div class="cv" style="display:flex;align-items:center;justify-content:center"><img style="max-width:100%;max-height:100%"></div>';w.arg=id=>{const f=S.fs.find(f=>f.id==id);if(f){$('img',b).src=f.c;$('.tt span',w.el).textContent='🖼️ '+f.name}}}
+/* ===== UBa Notes ===== */
+function notes(b,w){let cur=null,q='';
+ b.innerHTML='<div class="sp"><div class="sl"><div class="tl"><button class="nw">➕ Nueva</button><button class="ex">⬆ TXT</button></div><input class="sq" placeholder="🔍 Buscar…"><div class="ls"></div></div><div class="ed"><div class="tl"><b class="nm" style="flex:1"></b><button class="rn">✏️</button><button class="dn">🗑️</button></div><textarea></textarea></div></div>';
+ const L=$('.ls',b),T=$('textarea',b),N=$('.nm',b),G=()=>S.notes.find(n=>n.id==cur);
+ const R=()=>{const n=G();L.innerHTML='';const li=S.notes.filter(n=>(n.n+n.c).toLowerCase().includes(q));li.forEach(n=>{const d=h('div',n.id==cur?'on':'',esc(n.n));d.onclick=()=>{cur=n.id;R()};L.append(d)});if(!li.length)L.innerHTML='<div class="emp" style="padding:12px">Sin notas</div>';N.textContent=n?n.n:'';T.value=n?n.c:'';T.disabled=!n;T.placeholder=n?'Escribe aquí… (se guarda solo)':'Crea o selecciona una nota'};
+ w.arg=id=>{cur=id;R()};
+ $('.nw',b).onclick=()=>{const n={id:uid(),n:'Nota '+(S.notes.length+1),c:''};S.notes.unshift(n);cur=n.id;sv();R();T.focus()};
+ T.oninput=()=>{const n=G();if(n){n.c=T.value;sv()}};$('.sq',b).oninput=e=>{q=e.target.value.toLowerCase();R()};
+ $('.rn',b).onclick=()=>{const n=G();n&&ask('Nuevo nombre',n.n,v=>{n.n=v;sv();R()})};
+ $('.dn',b).onclick=()=>{const n=G();if(n&&confirm('¿Eliminar "'+n.n+'"?')){S.notes=S.notes.filter(x=>x!=n);cur=null;sv();R();notify('Notas','Nota eliminada')}};
+ $('.ex',b).onclick=()=>{const n=G();if(!n)return notify('Notas','Selecciona una nota','err');dl(n.n.replace(/\.txt$/,'')+'.txt',new Blob([n.c],{type:'text/plain'}));notify('Notas','Exportada como TXT','ok')};
+ cur=S.notes[0]?.id;R()}
+/* ===== UBa Browser ===== */
+function browser(b){let hs=['uba://inicio'],i=0;
+ b.innerHTML='<div class="tl"><button class="bk">◀</button><button class="fw">▶</button><button class="rl">⟳</button><button class="hm">🏠</button><input class="ad" style="flex:1;min-width:120px" placeholder="Busca o escribe una dirección"><button class="bm">☆</button><button class="ox" title="Abrir en pestaña nueva">↗</button></div><div class="nb"></div><div class="vw"></div>';
+ const V=$('.vw',b),AD=$('.ad',b),cur=()=>hs[i];
+ const norm=u=>{u=u.trim();if(!u||/^uba:/.test(u))return'uba://inicio';if(/^https?:\/\//i.test(u))return u;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u))return'https://'+u;return'https://es.wikipedia.org/w/index.php?search='+encodeURIComponent(u)};
+ const show=()=>{const u=cur(),home=u.startsWith('uba:');AD.value=home?'':u;$('.nb',b).textContent=home?'':'ℹ️ Algunos sitios bloquean ser mostrados dentro de otra página. Si ves un recuadro en blanco, usa ↗ para abrirlo en una pestaña nueva.';$('.bm',b).textContent=S.mk.some(m=>m[1]==u)?'★':'☆';V.innerHTML='';
+  if(home){const d=h('div','hp','<div style="font-size:48px">🌐</div><h2>UBa Browser</h2><p style="opacity:.7;margin:8px 0 16px">Busca en Wikipedia o escribe una dirección web</p><input class="hq" placeholder="Buscar…" style="width:min(420px,90%)"><div class="tiles"></div>');V.append(d);const T=$('.tiles',d);
+   S.mk.forEach(([n,u2],j)=>{const t=h('div','tile','🔖 '+esc(n));t.onclick=()=>go(u2);t.oncontextmenu=e=>ctx(e,[['🗑️ Quitar marcador',()=>{S.mk.splice(j,1);sv();show()}]]);T.append(t)});
+   if(!S.mk.length)T.innerHTML='<div class="emp">Sin marcadores. Usa ☆ en una página para guardarla.</div>';$('.hq',d).onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')go(e.target.value)}}
+  else{const f=h('iframe');f.src=u;f.setAttribute('sandbox','allow-scripts allow-forms allow-same-origin allow-popups');V.append(f)}};
+ const go=u=>{u=norm(u);hs=hs.slice(0,i+1);hs.push(u);i++;show()};
+ $('.bk',b).onclick=()=>{if(i>0){i--;show()}};$('.fw',b).onclick=()=>{if(i<hs.length-1){i++;show()}};$('.rl',b).onclick=show;$('.hm',b).onclick=()=>go('');
+ AD.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')go(AD.value)};
+ $('.bm',b).onclick=()=>{const u=cur();if(u.startsWith('uba:'))return notify('Marcadores','Abre una página para guardarla','err');const j=S.mk.findIndex(m=>m[1]==u);if(j>=0)S.mk.splice(j,1);else S.mk.push([u.replace(/^https?:\/\/(www\.)?/,'').slice(0,24),u]);sv();show()};
+ $('.ox',b).onclick=()=>{const u=cur();u.startsWith('uba:')?notify('Navegador','No hay página externa abierta','err'):window.open(u,'_blank','noopener')};show()}
+/* ===== UBa Calculator ===== */
+function calc(b,w){let c='0',pv=0,op=null,nw=1,hs=[];
+ b.innerHTML='<div class="cc"><div class="cm1"><div class="dp"><small></small><div>0</div></div><div class="kg"></div></div><div class="hs"><b>Historial</b><div></div><button>Borrar</button></div></div>';
+ const DS=$('.dp div',b),SM=$('.dp small',b),K=$('.kg',b),H=$('.hs div',b);
+ const f=(a,o,x)=>o=='+'?a+x:o=='−'?a-x:o=='×'?a*x:a/x,fm=r=>isFinite(r)?String(+r.toPrecision(12)):'Error';
+ const U=()=>{DS.textContent=c;SM.textContent=op?pv+' '+op:'';H.innerHTML=hs.map(x=>'<p>'+x+'</p>').join('')};
+ const P=k=>{if(c=='Error')k='C';
+  if(/\d/.test(k)){c=nw||c=='0'?k:c+k;nw=0}
+  else if(k=='.'){if(nw){c='0.';nw=0}else if(!c.includes('.'))c+='.'}
+  else if(k=='C'){c='0';pv=0;op=null;nw=1}
+  else if(k=='⌫'){if(!nw)c=c.length>1?c.slice(0,-1):'0'}
+  else if(k=='±')c=fm(-c);
+  else if(k=='%')c=fm(op&&'+−'.includes(op)?pv*c/100:c/100);
+  else if(k=='='){if(op){const e=pv+' '+op+' '+c,r=fm(f(pv,op,+c));hs.unshift(e+' = '+r);c=r;op=null;nw=1}}
+  else{if(op&&!nw)c=fm(f(pv,op,+c));if(c!='Error'){pv=+c;op=k;nw=1}}U()};
+ ['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','±','0','.','='].forEach(k=>{const e=h('button','',k);e.onclick=()=>P(k);if('÷×−+='.includes(k)){e.style.background='var(--a)';e.style.color='#001018'}K.append(e)});
+ $('.hs button',b).onclick=()=>{hs=[];U()};
+ const km={'*':'×','/':'÷','-':'−',Enter:'=',Backspace:'⌫',Escape:'C',',':'.'};
+ w.el.onkeydown=e=>{const k=km[e.key]||e.key;if(/^([\d.+%=]|[×÷−⌫C])$/.test(k)){e.preventDefault();P(k)}};U()}
+/* ===== UBa Paint ===== */
+function paint(b){
+ b.innerHTML='<div class="tl"><button class="pb on">🖌️ Pincel</button><button class="eb">🧽 Borrador</button><input type="color" class="col" value="#5ef4ff"><input type="range" class="sz" min="1" max="40" value="4"><span class="zl">4px</span><button class="cln">🧹 Limpiar</button><button class="dl">⬇ PNG</button></div><div class="cv"><canvas width="1000" height="640"></canvas></div>';
+ const cv=$('canvas',b),x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,1000,640);x.lineCap=x.lineJoin='round';let er=0,dr=0;
+ const tool=e=>{er=e;$('.pb',b).classList.toggle('on',!e);$('.eb',b).classList.toggle('on',!!e)};$('.pb',b).onclick=()=>tool(0);$('.eb',b).onclick=()=>tool(1);
+ const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+ cv.onpointerdown=e=>{dr=1;cv.setPointerCapture(e.pointerId);const[a,c]=pt(e);x.strokeStyle=er?'#fff':$('.col',b).value;x.lineWidth=$('.sz',b).value;x.beginPath();x.moveTo(a,c);x.lineTo(a+.1,c);x.stroke()};
+ cv.onpointermove=e=>{if(!dr)return;const[a,c]=pt(e);x.lineTo(a,c);x.stroke()};cv.onpointerup=()=>dr=0;
+ $('.sz',b).oninput=e=>$('.zl',b).textContent=e.target.value+'px';
+ $('.cln',b).onclick=()=>{x.fillStyle='#fff';x.fillRect(0,0,1000,640);notify('Paint','Lienzo limpio')};
+ $('.dl',b).onclick=()=>cv.toBlob(bl=>{dl('dibujo.png',bl);notify('Paint','Dibujo descargado','ok')})}
+/* ===== UBa Settings ===== */
+function sett(b){const R=()=>{
+ b.innerHTML=`<div class="st"><b>🌓 Tema</b><div class="sw"><button class="${S.theme=='dark'?'on':''}" data-t="dark">🌙 Oscuro</button><button class="${S.theme=='light'?'on':''}" data-t="light">☀️ Claro</button></div>
+ <b>🎨 Color de acento</b><div class="sw">${['#5ef4ff','#b985ff','#ff7ab8','#7dffb0','#ffb84d','#5e8bff'].map(c=>`<i class="${S.acc==c?'s':''}" data-c="${c}" style="background:${c}"></i>`).join('')}<input type="color" class="ac" value="${S.acc}"></div>
+ <b>🖼️ Fondo de pantalla</b><div class="sw">${BG.map((g,i)=>`<i class="${!S.img&&S.bg==i?'s':''}" data-b="${i}" style="background:${g}"></i>`).join('')}</div><div class="sw"><button class="ub">📂 Cargar imagen propia</button><input type="file" accept="image/*" hidden></div>
+ <b>🪟 Transparencia</b><input type="range" class="op" min=".2" max=".95" step=".05" value="${S.op}"><b>🔳 Tamaño de iconos</b><input type="range" class="isz" min="44" max="110" value="${S.is}">
+ <b>📊 Barra de tareas</b><select class="tbs"><option value="c">Centrada</option><option value="l">A la izquierda</option><option value="f">Flotante</option></select>
+ <button class="rs">♻️ Restaurar ajustes predeterminados</button><small style="opacity:.7">Atajos: Alt+1…9 y Alt+0 abren apps · Alt+X cierra la ventana activa · Esc cierra menús.</small></div>`;
+ $$('[data-t]',b).forEach(e=>e.onclick=()=>{S.theme=e.dataset.t;apply();R()});$$('[data-c]',b).forEach(e=>e.onclick=()=>{S.acc=e.dataset.c;apply();R()});
+ $('.ac',b).oninput=e=>{S.acc=e.target.value;apply()};$$('[data-b]',b).forEach(e=>e.onclick=()=>{S.bg=+e.dataset.b;S.img=null;apply();R()});
+ const fi=$('input[type=file]',b);$('.ub',b).onclick=()=>fi.click();fi.onchange=()=>{const f=fi.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.img=r.result;apply();R();notify('Fondo','Imagen aplicada','ok')};r.readAsDataURL(f)};
+ $('.op',b).oninput=e=>{S.op=+e.target.value;apply()};$('.isz',b).oninput=e=>{S.is=+e.target.value;apply();ric()};
+ const t=$('.tbs',b);t.value=S.tb;t.onchange=()=>{S.tb=t.value;apply()};
+ $('.rs',b).onclick=()=>{Object.assign(S,{theme:'dark',acc:'#5ef4ff',bg:0,img:null,op:.55,is:72,tb:'c',pos:{}});apply();ric();R();notify('Ajustes','Restaurados','ok')}};R()}
+/* ===== UBa Calendar ===== */
+function cal(b){const n=new Date();let y=n.getFullYear(),m=n.getMonth(),sel=null;const k=d=>`${y}-${m+1}-${d}`;
+ b.innerHTML='<div class="tl"><button class="pv">◀</button><b class="mt" style="flex:1;text-align:center"></b><button class="nx">▶</button></div><div class="cg"></div><div class="ce"></div>';
+ const G=$('.cg',b),E=$('.ce',b);
+ const ES=()=>{E.innerHTML='';if(!sel)return E.append(h('div','emp','Selecciona un día para ver o crear eventos'));
+  const t=h('div','tl',`<b>📅 ${sel}</b>`),a=h('button','','➕ Nuevo evento');a.onclick=()=>ask('Título del evento','',v=>{(S.ev[sel]=S.ev[sel]||[]).push(v);sv();R();notify('Calendario','Evento guardado','ok')});t.append(a);E.append(t);
+  (S.ev[sel]||[]).forEach((v,i)=>{const r=h('div','rw',`<span>${esc(v)}</span>`),d=h('button','','🗑️');d.onclick=()=>{S.ev[sel].splice(i,1);sv();R()};r.append(d);E.append(r)});
+  if(!S.ev[sel]?.length)E.append(h('div','emp','Sin eventos este día'))};
+ const R=()=>{$('.mt',b).textContent=new Date(y,m,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});G.innerHTML=['L','M','X','J','V','S','D'].map(d=>`<div class="h">${d}</div>`).join('');
+  const o=(new Date(y,m,1).getDay()+6)%7,t=new Date(y,m+1,0).getDate();for(let i=0;i<o;i++)G.append(h('div'));
+  for(let d=1;d<=t;d++){const e=h('div',(S.ev[k(d)]?.length?'ev ':'')+(sel==k(d)?'on ':'')+(k(d)==`${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`?'td':''),d);e.onclick=()=>{sel=k(d);R()};G.append(e)}ES()};
+ $('.pv',b).onclick=()=>{if(--m<0){m=11;y--}R()};$('.nx',b).onclick=()=>{if(++m>11){m=0;y++}R()};R()}
+/* ===== UBa Music ===== */
+const au=new Audio();au.volume=S.vol;let pl=[],ci=-1,ud=null;const ft=s=>isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
+function play(i){if(!pl[i])return;ci=i;au.src=pl[i].u;au.play().catch(()=>{});ud&&ud()}au.onended=()=>pl.length&&play((ci+1)%pl.length);
+function music(b){
+ b.innerHTML='<div class="mu"><div class="big">🎵</div><b class="mn"></b><div class="row"><span class="t1">0:00</span><input type="range" class="pr" min="0" max="1000" value="0" style="flex:1"><span class="t2">0:00</span></div><div class="row c"><button class="pv">⏮</button><button class="pp">▶</button><button class="nx">⏭</button></div><div class="row">🔊<input type="range" class="vo" min="0" max="1" step=".01" style="flex:1"><button class="ad">➕ Importar</button></div><div class="pl"></div><input type="file" accept="audio/*" multiple hidden></div>';
+ const q=s=>$(s,b),L=q('.pl');q('.vo').value=S.vol;
+ ud=()=>{q('.mn').textContent=pl[ci]?.n||'Sin reproducción';q('.pp').textContent=au.paused?'▶':'⏸';L.innerHTML=pl.length?'':'<div class="emp"><em>🎶</em>Lista vacía. Importa audio para empezar.</div>';pl.forEach((t,i)=>{const d=h('div',i==ci?'on':'','🎵 '+esc(t.n));d.onclick=()=>play(i);L.append(d)});tu()};
+ const tu=()=>{q('.t1').textContent=ft(au.currentTime);q('.t2').textContent=ft(au.duration);q('.pr').value=au.duration?au.currentTime/au.duration*1000:0};
+ au.ontimeupdate=tu;au.onplay=au.onpause=au.onloadedmetadata=ud;
+ q('.pp').onclick=()=>{if(ci<0)play(0);else au.paused?au.play():au.pause()};
+ q('.pv').onclick=()=>pl.length&&play((ci-1+pl.length)%pl.length);q('.nx').onclick=()=>pl.length&&play((ci+1)%pl.length);
+ q('.pr').oninput=e=>{if(au.duration)au.currentTime=e.target.value/1000*au.duration};q('.vo').oninput=e=>{S.vol=+e.target.value;au.volume=S.vol;$('#qv').value=S.vol;sv()};
+ const fi=q('input[type=file]');q('.ad').onclick=()=>fi.click();fi.onchange=()=>{[...fi.files].forEach(f=>pl.push({n:f.name,u:URL.createObjectURL(f)}));notify('Música',fi.files.length+' pista(s) añadida(s)','ok');fi.value='';if(ci<0)play(0);else ud()};ud()}
+/* ===== UBa Terminal (ficticia y segura) ===== */
+function term(b){
+ b.innerHTML='<div class="tm"><div class="o"></div><div class="ln">uba@max:~$&nbsp;<input spellcheck="false"></div></div>';
+ const o=$('.o',b),i=$('input',b),T=$('.tm',b),hi=[];let hp=0;
+ const out=t=>{o.append(h('div','',esc(t).replace(/\n/g,'<br>')));T.scrollTop=T.scrollHeight};
+ out('UBaOS MAX Terminal — escribe HELP para ver los comandos.\nEs una terminal ficticia: no ejecuta comandos reales del sistema.');
+ const C={help:()=>'Comandos: HELP, ABOUT, DATE, TIME, CLEAR, APPS, VERSION, OPEN <app>, ECHO <texto>',about:()=>'UBaOS MAX — sistema operativo ficticio que vive en tu navegador.',date:()=>new Date().toLocaleDateString('es-AR',{dateStyle:'full'}),time:()=>new Date().toLocaleTimeString('es-AR'),version:()=>'UBaOS MAX v1.0',apps:()=>Object.values(A).filter(a=>!a.hid).map(a=>a.i+' '+a.n).join('\n')};
+ i.onkeydown=e=>{e.stopPropagation();if(e.key=='ArrowUp'&&hi.length){hp=Math.max(0,hp-1);i.value=hi[hp]}if(e.key!='Enter')return;
+  const v=i.value.trim(),[c,...r]=v.split(/\s+/),a=r.join(' ').toLowerCase(),k=(c||'').toLowerCase();i.value='';if(!v)return;hi.push(v);hp=hi.length;out('> '+v);
+  if(k=='clear')o.innerHTML='';else if(k=='echo')out(r.join(' '));
+  else if(k=='open'){const f=a&&Object.keys(A).find(x=>!A[x].hid&&(x==a||A[x].n.toLowerCase().includes(a)));f?(launch(f),out('Abriendo '+A[f].n)):out('App no encontrada. Usa APPS.')}
+  else if(C[k])out(C[k]());else out('Comando desconocido: '+c+'. Usa HELP.')};
+ T.onclick=()=>i.focus();setTimeout(()=>i.focus(),50)}
+/* ===== UBa Recycle Bin ===== */
+function bin(b){const R=()=>{b.innerHTML=`<div class="tl"><b style="flex:1">🗑️ Papelera (${S.bin.length})</b><button class="em">Vaciar</button></div><div class="fl l"></div>`;const L=$('.fl',b);if(!S.bin.length)L.innerHTML='<div class="emp"><em>🗑️</em>La papelera está vacía</div>';
+ S.bin.forEach(e=>{const r=h('div','rw',`<span>${esc(e.n)} <small>(${e.o.length} elem.)</small></span>`),a=h('button','','♻️ Restaurar'),d=h('button','','❌ Eliminar');
+  a.onclick=()=>{const ok=e.from=='r'||S.fs.some(f=>f.id==e.from);e.o.forEach(f=>{if(f.id==e.r)f.p=ok?e.from:'r'});S.fs.push(...e.o);S.bin=S.bin.filter(x=>x!=e);sv();R();notify('Papelera','Restaurado: '+esc(e.n),'ok')};
+  d.onclick=()=>{if(confirm('¿Eliminar definitivamente "'+e.n+'"?')){S.bin=S.bin.filter(x=>x!=e);sv();R()}};r.append(a,d);L.append(r)});
+ $('.em',b).onclick=()=>{if(S.bin.length&&confirm('¿Vaciar la papelera?')){S.bin=[];sv();R();notify('Papelera','Vaciada','ok')}}};R()}
+/* ===== Registro de apps, iconos y menús ===== */
+const A={ex:{n:'UBa Explorer',i:'📁',f:explorer,w:720,h:480},no:{n:'UBa Notes',i:'📝',f:notes,w:660,h:440},br:{n:'UBa Browser',i:'🌐',f:browser,w:820,h:520},ca:{n:'UBa Calculator',i:'🧮',f:calc,w:520,h:420},pa:{n:'UBa Paint',i:'🎨',f:paint,w:760,h:520},se:{n:'UBa Settings',i:'⚙️',f:sett,w:560,h:560},cl:{n:'UBa Calendar',i:'📅',f:cal,w:480,h:520},mu:{n:'UBa Music',i:'🎵',f:music,w:420,h:520},te:{n:'UBa Terminal',i:'🖥️',f:term,w:600,h:380},bi:{n:'UBa Recycle Bin',i:'🗑️',f:bin,w:520,h:400},vi:{n:'Visor',i:'🖼️',f:viewer,w:560,h:420,hid:1}};
+const ks=Object.keys(A).filter(k=>!A[k].hid);
+function ric(){const c=$('#icons');c.innerHTML='';['ex','no','br','te','se','bi'].forEach((id,i)=>{const e=h('div','ic',`<em>${A[id].i}</em>${A[id].n}`),p=S.pos[id]||{x:14,y:14+i*(S.is+46)};e.style.left=p.x+'px';e.style.top=p.y+'px';
+ e.ondblclick=()=>launch(id);e.oncontextmenu=ev=>ctx(ev,[['📂 Abrir',()=>launch(id)]]);
+ e.onpointerdown=ev=>{$$('.ic').forEach(x=>x.classList.remove('sel'));e.classList.add('sel');const dx=ev.clientX-e.offsetLeft,dy=ev.clientY-e.offsetTop;let mvd=0;e.setPointerCapture(ev.pointerId);
+  e.onpointermove=m=>{mvd=1;e.style.left=Math.max(0,m.clientX-dx)+'px';e.style.top=Math.max(0,m.clientY-dy)+'px'};e.onpointerup=()=>{e.onpointermove=null;if(mvd){S.pos[id]={x:e.offsetLeft,y:e.offsetTop};sv()}else if(ev.pointerType=='touch')launch(id)}};c.append(e)})}
+function rsm(){const g=$('#sg'),q=$('#ss').value.toLowerCase();g.innerHTML='';ks.filter(k=>A[k].n.toLowerCase().includes(q)).forEach(k=>{const b=h('button','',`<em>${A[k].i}</em>${A[k].n.replace('UBa ','')}`);b.onclick=()=>{$('#sm').classList.remove('o');launch(k)};g.append(b)});if(!g.children.length)g.innerHTML='<div class="emp">Sin resultados</div>'}
+$('#st').onclick=()=>{const m=$('#sm');m.classList.toggle('o');$('#nc').classList.remove('o');if(m.classList.contains('o')){$('#ss').value='';rsm();$('#ss').focus()}};
+$('#ss').oninput=rsm;$('#ss').onkeydown=e=>{if(e.key=='Enter')$('#sg button')?.click()};$('#rb').onclick=()=>{save();location.reload()};
+$('#nb').onclick=()=>{$('#nc').classList.toggle('o');$('#sm').classList.remove('o')};$('#clk').onclick=()=>launch('cl');
+const qs=()=>{$('#qw').classList.toggle('on',!!S.wifi);$('#qb').classList.toggle('on',!!S.bt);$('#ti').textContent=(S.wifi?'📶':'🚫')+(S.bt?' 🔵':'');$('#qv').value=S.vol};
+$('#qw').onclick=()=>{S.wifi=+!S.wifi;qs();notify('Wi-Fi (simulado)',S.wifi?'Conectado a UBaNet':'Desconectado')};
+$('#qb').onclick=()=>{S.bt=+!S.bt;qs();notify('Bluetooth (simulado)',S.bt?'Activado':'Desactivado')};
+$('#qt').onclick=()=>{S.theme=S.theme=='dark'?'light':'dark';apply()};$('#qv').oninput=e=>{S.vol=+e.target.value;au.volume=S.vol;sv()};$('#qc').onclick=()=>{S.nt=[];sv();rnc()};
+const tk=()=>{const d=new Date();$('#clk').innerHTML=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})+'<br><small>'+d.toLocaleDateString('es-AR')+'</small>'};setInterval(tk,1e3);tk();
+$('#desk').oncontextmenu=e=>{if(e.target.closest('.win,#tb'))return;ctx(e,[['📝 Nueva nota',()=>{const n={id:uid(),n:'Nota '+(S.notes.length+1),c:''};S.notes.unshift(n);sv();launch('no',n.id)}],['🖥️ Abrir terminal',()=>launch('te')],['🎨 Personalizar',()=>launch('se')],['🔄 Ordenar iconos',()=>{S.pos={};sv();ric()}]])};
+document.oncontextmenu=e=>e.preventDefault();
+addEventListener('pointerdown',e=>{if(!e.target.closest('#cm'))$('#cm').style.display='none';if(!e.target.closest('#sm,#st'))$('#sm').classList.remove('o');if(!e.target.closest('#nc,#nb'))$('#nc').classList.remove('o')});
+/* ===== Atajos de teclado ===== */
+addEventListener('keydown',e=>{if(e.key=='Escape'){$('#sm').classList.remove('o');$('#nc').classList.remove('o');$('#cm').style.display='none'}
+ if(!e.altKey||!ready)return;const n='1234567890'.indexOf(e.key);if(n>=0&&ks[n]){e.preventDefault();launch(ks[n])}else if(e.key.toLowerCase()=='x'&&act){e.preventDefault();clo(act)}});
+/* ===== Inicio ===== */
+apply();ric();qs();rnc();
+setTimeout(()=>$('#bar i').style.width='100%',80);
+const bs=['Cargando núcleo…','Montando sistema de archivos virtual…','Iniciando servicios…','Preparando el escritorio…'];let bn=0;const t1=setInterval(()=>{$('#tx1').textContent=bs[bn++%4]},600);
+setTimeout(()=>{clearInterval(t1);$('#tx1').textContent='¡Bienvenido a UBaOS MAX!';$('#go').hidden=false},2600);
+const enter=()=>{if(ready||$('#go').hidden)return;ready=1;const b=$('#boot');b.style.opacity=0;setTimeout(()=>b.remove(),600);notify('UBaOS MAX','Sistema listo. Haz doble clic en un icono para empezar.','ok')};
+$('#go').onclick=enter;addEventListener('keydown',e=>{if(e.key=='Enter')enter()});
+</script></body></html>
